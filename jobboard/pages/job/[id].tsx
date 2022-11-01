@@ -1,36 +1,20 @@
-import { GetStaticPaths, GetStaticProps } from 'next';
 import Image from 'next/image';
-import { ParsedUrlQuery } from 'querystring';
-import { jobsData } from '../../components/jobs-data';
-import { JobDetails } from '../../components/jobs-interfaces';
+import { JobDetails, JobDetailsRes } from '../../components/jobs-interfaces';
+import Link from 'next/link';
+import { formatDistance } from 'date-fns';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import Head from 'next/head';
+import { NetworkError, Preloader } from '../../components/Preloader';
 import bookmarkIcon from '../../assets/icons/bookmark.svg';
 import shareIcon from '../../assets/icons/share.svg';
 import placeIcon from '../../assets/icons/place.svg';
 import arrowIcon from '../../assets/icons/arrow.svg';
 import map from '../../assets/map.png';
-import Link from 'next/link';
-import { formatDistance } from 'date-fns';
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paramsArray = jobsData.map((job) => ({ params: { id: job.id } }));
-  return {
-    paths: paramsArray,
-    fallback: false,
-  };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const jobData = jobsData.find((job) => job.id === ((params as ParsedUrlQuery).id as string));
-  return {
-    props: {
-      ...jobData,
-    },
-  };
-};
-
-export default function Job(props: JobDetails) {
+const jobPageTemplate = (props: JobDetails) => {
   return (
-    <div className="m-auto mt-6 flex w-11/12 max-w-[1258px] flex-col items-start justify-between gap-8 bg-white leading-tight text-dark-01 md:mt-[50px] lg:flex-row">
+    <>
       <main className="max-w-[723px]">
         <div className="flex w-auto flex-col sm:flex-row sm:items-center">
           <h1 className="mr-auto text-[28px] font-bold tracking-wide">Job Details</h1>
@@ -145,9 +129,7 @@ export default function Job(props: JobDetails) {
       <section className="relative mb-9 flex max-w-[402px] flex-none flex-col justify-between overflow-hidden rounded-lg bg-[#2A3047] text-white">
         <span className="absolute h-[273px] w-[273px] translate-y-[-12px] translate-x-[-77px] rounded-full bg-[#202336]"></span>
         <div className="relative m-auto mt-[31px] flex flex-col gap-2 px-16">
-          <div className="text-[20px] font-bold leading-tight text-[##E7EAF0]">
-            {props.name}
-          </div>
+          <div className="text-[20px] font-bold leading-tight text-[##E7EAF0]">{props.name}</div>
           <div className="font-secondary text-lg leading-snug tracking-tight text-[#E8EBF3]">
             <Image src={placeIcon} alt="P" className="mr-2 inline -translate-y-1" />
             {props.address}
@@ -158,6 +140,40 @@ export default function Job(props: JobDetails) {
         </div>
         <Image src={map} alt="P" className="relative mt-5 rounded-b-lg" />
       </section>
+    </>
+  );
+};
+
+export default function Job() {
+  const router = useRouter();
+  const { id } = router.query;
+  console.log(id);
+
+  const [jobsData, setJobsData] = useState(undefined as undefined | JobDetails);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(
+      'https://api.json-generator.com/templates/ZM1r0eic3XEy/data?access_token=wm3gg940gy0xek1ld98uaizhz83c6rh2sir9f9fu'
+    )
+      .then((res) => res.json())
+      .then((data: JobDetailsRes) => {
+        if (data.length) setJobsData(data.find((job) => job.id === id));
+        setLoading(false);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className="m-auto mt-6 flex w-11/12 max-w-[1258px] flex-col items-start justify-between gap-8 bg-white leading-tight text-dark-01 md:mt-[50px] lg:flex-row">
+      <Head>
+        <title>Job Board Details</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      {isLoading && <Preloader />}
+      {!isLoading && jobsData && jobPageTemplate(jobsData)}
+      {!isLoading && !jobsData && <NetworkError message="No data fetched. Probably too many requests?" />}
     </div>
   );
 }
