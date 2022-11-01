@@ -2,7 +2,6 @@ import Head from 'next/head';
 import JobCard from '../components/JobCard';
 import { JobDetails, JobDetailsRes } from '../components/jobs-interfaces';
 import { jobsData } from '../components/jobs-data';
-import Link from 'next/link';
 
 export async function getStaticProps() {
   return {
@@ -20,9 +19,7 @@ const Home = ({ jobsData }: { jobsData: JobDetailsRes }) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       {jobsData.map((job: JobDetails) => (
-        <Link key={job.id} href={`/jobs/${job.id}`}>
-          <JobCard {...job}></JobCard>
-        </Link>
+        <JobCard key={job.id} {...job}></JobCard>
       ))}
     </div>
   );

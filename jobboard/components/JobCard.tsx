@@ -5,10 +5,11 @@ import bookmarkIcon from '../assets/icons/bookmark.svg';
 import createStarsRating from '../utils/createStarsRating';
 import { formatDistance } from 'date-fns';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function JobCard(props: JobDetails) {
   return (
-    <div className="flex w-11/12 max-w-[1400px] h-[164px] mx-auto px-4 py-6 bg-white rounded-lg overflow-hidden shadow-md hover:bg-slate-50 hover:shadow-lg hover:cursor-pointer transition-all">
+    <Link href={`/job/${props.id}`} className="flex w-11/12 max-w-[1400px] h-[164px] mx-auto px-4 py-6 bg-white rounded-lg overflow-hidden shadow-md hover:bg-slate-50 hover:shadow-lg hover:cursor-pointer transition-all">
       <picture className="mr-[26px]">
         <source srcSet={props.pictures[0]} type="image/jpg" />
         <img
@@ -34,6 +35,6 @@ export default function JobCard(props: JobDetails) {
           Posted {formatDistance(new Date(`${props.createdAt}`), new Date(), { addSuffix: true })}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
